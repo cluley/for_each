@@ -1,6 +1,7 @@
 #pragma once
 
 #include <future>
+#include <algorithm>
 
 namespace own {
 	template<class It, class Foo, size_t size = 100>
@@ -9,18 +10,16 @@ namespace own {
 		auto curr_size = std::distance(begin, end);
 		if (curr_size <= size) 
 		{
-			for (; begin != end; ++begin) {
-				f(*begin);
-			}
-			return f;
+			auto res = std::for_each(begin, end, f);
+			return res;
 		}
 
 		auto mid = begin;
 		std::advance(mid, curr_size / 2);
 		
-	    std::future<Foo> ft_L = std::async(own::for_each<It, Foo>, begin, mid, f);
-		std::future<Foo> ft_R = std::async(own::for_each<It, Foo>, mid, end, f);
+	    auto ft = std::async(own::for_each<It, Foo>, begin, mid, f);
+		auto local = own::for_each(mid, end, f);
 
-		return ft_L.get();
+		return ft.get();
 	}
 }
